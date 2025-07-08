@@ -1,13 +1,12 @@
 import 'dart:convert';
-
-import 'package:cookbook/recipe_card.dart';
+import 'package:cookbook/pages/information.dart';
+import 'package:cookbook/widget/recipe_card.dart';
 import 'package:cookbook/util/secrets.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class DisplayTile extends StatefulWidget {
-  final int currentPage;
-  const DisplayTile({super.key,required this.currentPage});
+  const DisplayTile({super.key});
 
   @override
   State<DisplayTile> createState() => _DisplayTileState();
@@ -40,29 +39,12 @@ class _DisplayTileState extends State<DisplayTile> {
       future: recipes, 
       builder: (context,snapshot){
         if(snapshot.connectionState == ConnectionState.waiting){
-          return const Center(child: CircularProgressIndicator(color:  Color.fromARGB(255, 102, 180, 124),            strokeWidth: 5,));
+          return const Center(child: CircularProgressIndicator(color:  Colors.green,strokeWidth: 5,));
         }
         if(snapshot.hasError){
-          return Center(child: Text(snapshot.error.toString()));
+          return Center(child: Text('Error',style: Theme.of(context).textTheme.bodyMedium,));
         }
         final data=snapshot.data!;
-        if (widget.currentPage==1) {
-          return GridView.builder(
-            itemCount: 10,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2,childAspectRatio: 1),
-            itemBuilder: (context, index) {
-              final resultId = data['results'][index]['id'];
-              final name = data['results'][index]['title'];
-              final image = data['results'][index]['image'];
-              return RecipeCard(
-                id: resultId,
-                image: image,
-                title: name,
-                currentPage: widget.currentPage,
-              );
-          },
-        );
-        } else {
           return ListView.builder(
           scrollDirection: Axis.horizontal,
           itemCount: 6,
@@ -70,15 +52,20 @@ class _DisplayTileState extends State<DisplayTile> {
             final resultId = data['results'][index]['id'];
             final name = data['results'][index]['title'];
             final image = data['results'][index]['image'];
-            return RecipeCard(
-              id: resultId,
-              image: image,
-              title: name,
-              currentPage: widget.currentPage,
+            return GestureDetector(
+              onTap: (){
+                Navigator.of(context).push(MaterialPageRoute(builder: (context){
+                  return Information(name: name, id: resultId, image: image);
+                }));
+              },
+              child: RecipeCard(
+                id: resultId,
+                image: image,
+                title: name
+              ),
             );
           }
         );
-        }
       } );
   }
 }
